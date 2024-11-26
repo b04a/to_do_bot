@@ -46,3 +46,10 @@ async def get_tasks(pool, user_id: int):
             SELECT id, task, done FROM tasks WHERE user_id = $1
         """, user_id)
         return result
+
+#markdown
+async def mark_task_done(pool, task_id: int):
+    async with pool.acquire() as connection:
+        await connection.execute("""
+            UPDATE tasks SET done = TRUE WHERE id = $1
+        """, task_id)
