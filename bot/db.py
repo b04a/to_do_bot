@@ -53,3 +53,10 @@ async def mark_task_done(pool, task_id: int):
         await connection.execute("""
             UPDATE tasks SET done = TRUE WHERE id = $1
         """, task_id)
+
+#delete task
+async def delete_task(pool, task_id: int):
+    async with pool.acquire() as connection:
+        await connection.execute("""
+            DELETE FROM tasks WHERE id = $1
+        """, task_id)

@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
 from config import BOT_TOKEN
-from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done
+from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done, delete_task
 import asyncio
 
 # Создаём объект бота и диспетчера
@@ -59,6 +59,15 @@ async def done(message: Message):
         task_id = int(message.text[len("/done "):].strip())
         await mark_task_done(dp.pool, task_id)
         await message.answer(f"Задача с ID {task_id} помечена как выполненная.")
+    except ValueError:
+        await message.answer("Пожалуйста, укажите правильный ID задачи.")
+
+@dp.message(Command("delete"))
+async def delete(message: Message):
+    try:
+        task_id = int(message.text[len("/delete "):].strip())
+        await delete_task(dp.pool, task_id)
+        await message.answer(f"Задача с ID {task_id} удалена.")
     except ValueError:
         await message.answer("Пожалуйста, укажите правильный ID задачи.")
 
