@@ -60,3 +60,18 @@ async def delete_task(pool, task_id: int):
         await connection.execute("""
             DELETE FROM tasks WHERE id = $1
         """, task_id)
+
+#delete all
+async def delete_all_task(pool):
+    async with pool.acquire() as connection:
+        await connection.execute("""
+            DELETE FROM tasks
+        """)
+
+#вывод всех тасков
+async def get_tasks_true_status(pool):
+    async with pool.acquire() as connection:
+        result = await connection.fetch("""
+            SELECT * FROM tasks WHERE done = TRUE
+        """)
+        return result

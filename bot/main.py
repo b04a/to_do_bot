@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
 from config import BOT_TOKEN
-from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done, delete_task
+from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done, delete_task, delete_all_task, get_tasks_true_status
 import asyncio
 
 # Создаём объект бота и диспетчера
@@ -30,7 +30,9 @@ async def help(message: Message):
     await message.answer("/add <task> - добавить задачу\n"
                          "/list - показать все задачи\n"
                          "/done <task_id> - пометить задачу как выполненную\n"
-                         "/delete <task_id> - удалить задачу")
+                         "/delete <task_id> - удалить задачу\n"
+                         "/delete_all удалить все задачи\n"
+                         "/all_done_tasks вывод всех готовых задач")
 
 # Хэндлер команды /add
 @dp.message(Command("add"))
@@ -70,6 +72,25 @@ async def delete(message: Message):
         await message.answer(f"Задача с ID {task_id} удалена.")
     except ValueError:
         await message.answer("Пожалуйста, укажите правильный ID задачи.")
+
+@dp.message(Command("delete_all"))
+async def delete(message: Message):
+    try:
+        await delete_all_task(dp.pool)
+        async with dp.pool.acquire() as connection:
+            await connection.execute("ALTER SEQUENCE tasks_id_seq RESTART WITH 1;")
+        await message.answer(f"Удалены все задачи.")
+    except ValueError:
+        await message.answer("Ошибка")
+
+@dp.message(Command("all_done_tasks"))
+async def list_tasks(message: Message):
+    tasks = await get_tasks_true_status(dp.pool)
+    if tasks:
+        task_list = "\n".join([f"{task['id']}. {task['task']}" for task in tasks])
+        await message.answer(f"Ваши готовые задачи:\n{task_list}")
+    else:
+        await message.answer("У вас нет задач.")
 
 async def main():
     # Инициализируем пул и передаем его в диспетчер
