@@ -75,3 +75,11 @@ async def get_tasks_true_status(pool):
             SELECT * FROM tasks WHERE done = TRUE
         """)
         return result
+
+#вывод всех тасков
+async def get_tasks_false_status(pool):
+    async with pool.acquire() as connection:
+        result = await connection.fetch("""
+            SELECT * FROM tasks WHERE done = FALSE
+        """)
+        return result

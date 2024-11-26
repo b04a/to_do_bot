@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
 from config import BOT_TOKEN
-from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done, delete_task, delete_all_task, get_tasks_true_status
+from db import create_db_pool, create_tables, check_connection, add_task, get_tasks, mark_task_done, delete_task, delete_all_task, get_tasks_true_status, get_tasks_false_status
 import asyncio
 
 # Создаём объект бота и диспетчера
@@ -31,8 +31,9 @@ async def help(message: Message):
                          "/list - показать все задачи\n"
                          "/done <task_id> - пометить задачу как выполненную\n"
                          "/delete <task_id> - удалить задачу\n"
-                         "/delete_all удалить все задачи\n"
-                         "/all_done_tasks вывод всех готовых задач")
+                         "/delete_all - удалить все задачи\n"
+                         "/all_done_tasks - вывод всех готовых задач\n"
+                         "/all_false_tasks - вывод всех не готовых задач\n")
 
 # Хэндлер команды /add
 @dp.message(Command("add"))
@@ -89,6 +90,15 @@ async def list_tasks(message: Message):
     if tasks:
         task_list = "\n".join([f"{task['id']}. {task['task']}" for task in tasks])
         await message.answer(f"Ваши готовые задачи:\n{task_list}")
+    else:
+        await message.answer("У вас нет задач.")
+
+@dp.message(Command("all_false_tasks"))
+async def list_tasks(message: Message):
+    tasks = await get_tasks_false_status(dp.pool)
+    if tasks:
+        task_list = "\n".join([f"{task['id']}. {task['task']}" for task in tasks])
+        await message.answer(f"Ваши не готовые задачи:\n{task_list}")
     else:
         await message.answer("У вас нет задач.")
 
