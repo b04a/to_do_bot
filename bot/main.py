@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
 from config import BOT_TOKEN
-from db import create_db_pool, create_tables, check_connection, add_task
+from db import create_db_pool, create_tables, check_connection, add_task, get_tasks
 import asyncio
 
 # Создаём объект бота и диспетчера
@@ -42,6 +42,16 @@ async def add(message: Message):
         await message.answer(f"Задача '{task}' добавлена!")
     else:
         await message.answer("Пожалуйста, укажи текст задачи после команды.")
+
+@dp.message(Command("list"))
+async def list_tasks(message: Message):
+    tasks = await get_tasks(dp.pool, message.from_user.id)
+    if tasks:
+        task_list = "\n".join([f"{task['id']}. {task['task']} - {'Выполнено' if task['done'] else 'Не выполнено'}"
+                             for task in tasks])
+        await message.answer(f"Ваши задачи:\n{task_list}")
+    else:
+        await message.answer("У вас нет задач.")
 
 async def main():
     # Инициализируем пул и передаем его в диспетчер

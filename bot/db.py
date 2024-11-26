@@ -37,3 +37,12 @@ async def add_task(pool, user_id: int, task: str):
         await connection.execute("""
             INSERT INTO tasks (user_id, task) VALUES ($1, $2)
         """, user_id, task)
+
+
+#вывод всех тасков
+async def get_tasks(pool, user_id: int):
+    async with pool.acquire() as connection:
+        result = await connection.fetch("""
+            SELECT id, task, done FROM tasks WHERE user_id = $1
+        """, user_id)
+        return result
